@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FHIR Platform — Setup & Deployment Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f8f9fb;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e7ed;
+  --border:#dde1e8;--border2:#c8cdd7;
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --accent:#0b6e4f;--accent2:#0e8f66;--accent-bg:#e6f4ef;
+  --blue:#1d4ed8;--blue-bg:#eff6ff;--blue-bd:#bfdbfe;
+  --red:#dc2626;--yellow:#b45309;
+  --code-bg:#1e2432;--code-text:#e2e8f0;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;}
+a{color:var(--blue);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+/* ── Layout ── */
+.page-wrap{max-width:900px;margin:0 auto;padding:32px 20px 80px;}
+.two-col{display:grid;grid-template-columns:260px 1fr;gap:32px;align-items:start;}
+.sidebar-nav{position:sticky;top:24px;}
+
+/* ── Nav ── */
+.nav-list{list-style:none;}
+.nav-list li{margin-bottom:4px;}
+.nav-list a{display:block;padding:6px 12px;border-radius:var(--radius);font-size:13px;color:var(--text2);transition:all .15s;}
+.nav-list a:hover{background:var(--accent-bg);color:var(--accent);text-decoration:none;}
+.nav-list a.active{background:var(--accent-bg);color:var(--accent);font-weight:500;}
+.nav-section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:10px 12px 4px;}
+
+/* ── Hero ── */
+.hero{background:var(--code-bg);border-radius:var(--radius-lg);padding:32px;margin-bottom:32px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(11,110,79,.25) 0%,transparent 60%);}
+.hero-content{position:relative;z-index:1;}
+.hero h1{font-size:clamp(20px,3vw,28px);font-weight:600;color:#f0fdf4;margin-bottom:8px;}
+.hero p{font-size:13px;color:#94a3b8;max-width:500px;line-height:1.7;}
+.hero-badges{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.hbadge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;}
+.hbadge.green{background:rgba(11,110,79,.2);color:#86efac;border:1px solid rgba(11,110,79,.3);}
+.hbadge.blue{background:rgba(29,78,216,.2);color:#93c5fd;border:1px solid rgba(29,78,216,.3);}
+.hbadge.yellow{background:rgba(180,83,9,.2);color:#fcd34d;border:1px solid rgba(180,83,9,.3);}
+
+/* ── Section ── */
+.section{margin-bottom:40px;}
+.section-label{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+h2 .step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+h3{font-size:15px;font-weight:600;margin:16px 0 8px;}
+p{font-size:14px;color:var(--text2);margin-bottom:12px;}
+.lead{font-size:15px;color:var(--text2);margin-bottom:20px;}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.card-icon svg{width:20px;height:20px;}
+.card-sm h4{font-size:13px;font-weight:600;margin-bottom:4px;}
+.card-sm p{font-size:12px;margin-bottom:0;}
+
+/* ── Code blocks ── */
+.code-block{background:var(--code-bg);border-radius:var(--radius);padding:16px;margin:12px 0;overflow-x:auto;position:relative;}
+.code-block pre{font-family:var(--mono);font-size:12px;color:var(--code-text);line-height:1.75;white-space:pre;}
+.code-block .copy-btn{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#94a3b8;font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font);}
+.code-block .copy-btn:hover{background:rgba(255,255,255,.15);color:white;}
+.cmd{color:#86efac;}
+.cmt{color:#64748b;font-style:italic;}
+.str{color:#fbbf24;}
+.kw{color:#93c5fd;}
+
+/* ── Steps ── */
+.step-list{counter-reset:steps;}
+.step-item{display:flex;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.step-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.step-circle{width:32px;height:32px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent);color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-body h4{font-size:14px;font-weight:600;margin-bottom:4px;}
+.step-body p{font-size:13px;color:var(--text2);margin-bottom:8px;}
+
+/* ── Flow diagram ── */
+.flow{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin:16px 0;}
+.flow-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.flow-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;font-size:12px;font-weight:500;white-space:nowrap;}
+.flow-box.client{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);}
+.flow-box.vendor{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.flow-box.bridge{border-color:#7c3aed;background:#f5f3ff;color:#7c3aed;}
+.flow-box.storage{border-color:var(--yellow);background:#fffbeb;color:var(--yellow);}
+.flow-arrow{font-size:16px;color:var(--text3);}
+.flow-label{font-size:10px;color:var(--text3);font-style:italic;}
+
+/* ── File tree ── */
+.file-tree{background:var(--code-bg);border-radius:var(--radius);padding:16px;font-family:var(--mono);font-size:12px;color:var(--code-text);line-height:2;}
+.ft-dir{color:#93c5fd;}
+.ft-file{color:#e2e8f0;}
+.ft-cmt{color:#64748b;}
+.ft-html{color:#86efac;}
+.ft-js{color:#fbbf24;}
+
+/* ── Badges ── */
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;}
+.badge-green{background:var(--accent-bg);color:var(--accent);border:1px solid #b2ddd0;}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);}
+.badge-gray{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+
+/* ── Alert ── */
+.alert{border-radius:var(--radius);padding:12px 16px;margin:12px 0;font-size:13px;display:flex;align-items:flex-start;gap:10px;}
+.alert-green{background:var(--accent-bg);border:1px solid #b2ddd0;color:var(--accent);}
+.alert-blue{background:var(--blue-bg);border:1px solid var(--blue-bd);color:var(--blue);}
+.alert-yellow{background:#fffbeb;border:1px solid #fde68a;color:var(--yellow);}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* ── Table ── */
+.guide-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;}
+.guide-table th{text-align:left;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+.guide-table td{padding:9px 12px;border:1px solid var(--border);color:var(--text2);vertical-align:top;}
+.guide-table tr:nth-child(even) td{background:#fafbfc;}
+
+/* ── Divider ── */
+.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+
+/* ── Responsive ── */
+@media(max-width:720px){
+  .two-col{grid-template-columns:1fr;}
+  .sidebar-nav{display:none;}
+  .card-grid{grid-template-columns:1fr;}
+  .flow-row{gap:6px;}
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="two-col">
+<!-- ── Sidebar nav ── -->
+<nav class="sidebar-nav">
+  <div class="nav-section-label">Getting Started</div>
+  <ul class="nav-list">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#files">File Structure</a></li>
+    <li><a href="#flow">Message Flow</a></li>
+  </ul>
+  <div class="nav-section-label">GitHub Pages</div>
+  <ul class="nav-list">
+    <li><a href="#create-repo">1. Create Repository</a></li>
+    <li><a href="#upload">2. Upload Files</a></li>
+    <li><a href="#enable-pages">3. Enable Pages</a></li>
+    <li><a href="#verify">4. Verify & Test</a></li>
+  </ul>
+  <div class="nav-section-label">Using the Platforms</div>
+  <ul class="nav-list">
+    <li><a href="#test-flow">Test the Flow</a></li>
+    <li><a href="#downloads">Downloading Files</a></li>
+    <li><a href="#storage">Storage Limits</a></li>
+  </ul>
+  <div class="nav-section-label">Advanced</div>
+  <ul class="nav-list">
+    <li><a href="#production">Production FHIR Server</a></li>
+    <li><a href="#cross-device">Cross-Device Messaging</a></li>
+    <li><a href="#troubleshoot">Troubleshooting</a></li>
+  </ul>
+</nav>
+
+<!-- ── Main content ── -->
+<main>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>FHIR Platform Suite — Setup & Deployment Guide</h1>
+    <p>Complete guide to deploying the Client and Vendor platforms on GitHub Pages and running a live FHIR R4 order → result message flow between them.</p>
+    <div class="hero-badges">
+      <span class="hbadge green">✓ No server required</span>
+      <span class="hbadge blue">FHIR R4 compliant</span>
+      <span class="hbadge yellow">GitHub Pages free tier</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: Overview -->
+<div class="section" id="overview">
+  <div class="section-label">Overview</div>
+  <h2>What you're deploying</h2>
+  <p class="lead">Five files. Two platforms. One shared messaging bridge — all running in the browser with no backend.</p>
+
+  <div class="card-grid">
+    <div class="card-sm">
+      <div class="card-icon" style="background:#eff6ff;"><svg viewBox="0 0 24 24" fill="#1d4ed8"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+      <h4>client.html</h4>
+      <p>Clinician-facing order platform. Create ServiceRequests via form, JSON, or XML. View returned results and download files.</p>
+    </div>
+    <div class="card-sm">
+      <div class="card-icon" style="background:#e6f4ef;"><svg viewBox="0 0 24 24" fill="#0b6e4f"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg></div>
+      <h4>vendor.html</h4>
+      <p>Lab/radiology-facing portal. Receive orders, build DiagnosticReport results, attach files, send back to client.</p>
+    </div>
+    <div class="card-sm">
+      <div class="card-icon" style="background:#f5f3ff;"><svg viewBox="0 0 24 24" fill="#7c3aed"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></div>
+      <h4>fhir-bridge.js</h4>
+      <p>Shared messaging layer. BroadcastChannel for real-time tab-to-tab delivery. localStorage for persistence and file storage.</p>
+    </div>
+    <div class="card-sm">
+      <div class="card-icon" style="background:#fafafa;border:1px solid #e5e7eb;"><svg viewBox="0 0 24 24" fill="#6b7280"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+      <h4>index.html</h4>
+      <p>Landing page with bridge status, order/result counters, and links to both platforms. Your deployment's home page.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: File structure -->
+<div class="section" id="files">
+  <div class="section-label">File Structure</div>
+  <h2>Repository layout</h2>
+  <p>All five files go in the <strong>root</strong> of your repository. No subfolders needed.</p>
+
+  <div class="file-tree">
+<span class="ft-dir">fhir-platform/</span>  <span class="ft-cmt">← your GitHub repository</span>
+├── <span class="ft-html">index.html</span>         <span class="ft-cmt">← landing page (GitHub Pages serves this first)</span>
+├── <span class="ft-html">client.html</span>        <span class="ft-cmt">← client platform</span>
+├── <span class="ft-html">vendor.html</span>        <span class="ft-cmt">← vendor platform</span>
+├── <span class="ft-js">fhir-bridge.js</span>     <span class="ft-cmt">← shared bridge (loaded by both HTML files)</span>
+├── <span class="ft-file">.nojekyll</span>          <span class="ft-cmt">← tells GitHub Pages to skip Jekyll processing</span>
+└── <span class="ft-file">README.md</span>          <span class="ft-cmt">← documentation (optional)</span>
+  </div>
+
+  <div class="alert alert-yellow">
+    <span class="alert-icon">⚠️</span>
+    <span>All five files must be in the <strong>same folder</strong>. The bridge script is referenced as <code>src="fhir-bridge.js"</code> (relative path). If you rename any file, update the references inside the HTML files too.</span>
+  </div>
+</div>
+
+<!-- SECTION: Message Flow -->
+<div class="section" id="flow">
+  <div class="section-label">Architecture</div>
+  <h2>How messages flow between platforms</h2>
+
+  <div class="flow">
+    <div class="flow-row">
+      <div class="flow-box client">Client Tab<br><span style="font-size:10px;opacity:.7;">client.html</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box bridge">fhir-bridge.js<br><span style="font-size:10px;opacity:.7;">submitOrder()</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box storage">localStorage<br><span style="font-size:10px;opacity:.7;">fhir_orders</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box bridge">BroadcastChannel<br><span style="font-size:10px;opacity:.7;">fhir_orders_channel</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box vendor">Vendor Tab<br><span style="font-size:10px;opacity:.7;">vendor.html</span></div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text3);margin:4px 0 12px;">Order flow: Client → Vendor (ServiceRequest)</div>
+
+    <div class="flow-row">
+      <div class="flow-box vendor">Vendor Tab<br><span style="font-size:10px;opacity:.7;">vendor.html</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box bridge">fhir-bridge.js<br><span style="font-size:10px;opacity:.7;">sendResult()</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box storage">localStorage<br><span style="font-size:10px;opacity:.7;">fhir_results</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box bridge">BroadcastChannel<br><span style="font-size:10px;opacity:.7;">fhir_results_channel</span></div>
+      <div class="flow-arrow">──►</div>
+      <div class="flow-box client">Client Tab<br><span style="font-size:10px;opacity:.7;">client.html</span></div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text3);margin:4px 0;">Result flow: Vendor → Client (DiagnosticReport Bundle)</div>
+  </div>
+
+  <table class="guide-table">
+    <thead><tr><th>Mechanism</th><th>What it does</th><th>Latency</th></tr></thead>
+    <tbody>
+      <tr><td><strong>BroadcastChannel</strong></td><td>Instant message delivery between same-browser tabs</td><td>&lt; 100ms</td></tr>
+      <tr><td><strong>localStorage poll</strong></td><td>Fallback — tabs check for new data every 4 seconds</td><td>≤ 4s</td></tr>
+      <tr><td><strong>storage event</strong></td><td>Cross-tab notification when localStorage changes</td><td>&lt; 200ms</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- STEP 1 -->
+<div class="section" id="create-repo">
+  <div class="section-label">Step 1</div>
+  <h2><span class="step-num">1</span>Create a GitHub Repository</h2>
+  <p>You need a free GitHub account and a new public repository.</p>
+
+  <div class="card">
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-circle">a</div>
+        <div class="step-body">
+          <h4>Sign in at github.com</h4>
+          <p>Go to <a href="https://github.com" target="_blank">github.com</a>. Create a free account if you don't have one.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">b</div>
+        <div class="step-body">
+          <h4>Click the + icon → "New repository"</h4>
+          <p>Top-right corner of any GitHub page. Or go directly to <code>github.com/new</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">c</div>
+        <div class="step-body">
+          <h4>Configure the repository</h4>
+          <p>Fill in these fields exactly:</p>
+          <table class="guide-table">
+            <tr><td><strong>Repository name</strong></td><td><code>fhir-platform</code> (or any name — it becomes part of your URL)</td></tr>
+            <tr><td><strong>Visibility</strong></td><td>✅ <strong>Public</strong> — required for free GitHub Pages</td></tr>
+            <tr><td><strong>Initialize repository</strong></td><td>❌ Leave unchecked — you'll upload files manually</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">d</div>
+        <div class="step-body">
+          <h4>Click "Create repository"</h4>
+          <p>You'll land on an empty repository page. Keep this tab open for Step 2.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="section" id="upload">
+  <div class="section-label">Step 2</div>
+  <h2><span class="step-num">2</span>Upload Your Files</h2>
+
+  <h3>Option A — Web Upload (no Git needed, recommended)</h3>
+  <div class="card">
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-body">
+          <h4>Click "uploading an existing file"</h4>
+          <p>On the empty repository page, look for the text <em>"…or upload an existing file"</em> and click it.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-body">
+          <h4>Drag and drop all 5 files at once</h4>
+          <p>Drag these files from your Downloads folder into the upload box simultaneously:</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+            <span class="badge badge-green">index.html</span>
+            <span class="badge badge-green">client.html</span>
+            <span class="badge badge-green">vendor.html</span>
+            <span class="badge badge-blue">fhir-bridge.js</span>
+            <span class="badge badge-gray">.nojekyll</span>
+          </div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-body">
+          <h4>Commit the files</h4>
+          <p>Scroll down, add the message <code>Initial release</code>, and click <strong>Commit changes</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Option B — Git Command Line</h3>
+  <div class="code-block">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><span class="cmt"># 1. Clone your empty repository</span>
+<span class="cmd">git clone</span> https://github.com/<span class="str">YOUR_USERNAME</span>/fhir-platform.git
+<span class="cmd">cd</span> fhir-platform
+
+<span class="cmt"># 2. Copy your 5 downloaded files into this folder, then:</span>
+<span class="cmd">git add</span> index.html client.html vendor.html fhir-bridge.js .nojekyll README.md
+<span class="cmd">git commit</span> -m <span class="str">"Initial release — FHIR Platform Suite"</span>
+<span class="cmd">git push</span> origin main</pre>
+  </div>
+
+  <div class="alert alert-blue">
+    <span class="alert-icon">ℹ️</span>
+    <span>Replace <strong>YOUR_USERNAME</strong> with your actual GitHub username. The repository URL appears on your repository page.</span>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="section" id="enable-pages">
+  <div class="section-label">Step 3</div>
+  <h2><span class="step-num">3</span>Enable GitHub Pages</h2>
+
+  <div class="card">
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-body">
+          <h4>Open repository Settings</h4>
+          <p>In your repository, click the <strong>Settings</strong> tab in the top navigation bar (the gear icon).</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-body">
+          <h4>Find Pages in the left sidebar</h4>
+          <p>Scroll down in the left sidebar until you see <strong>Pages</strong> under the "Code and automation" section. Click it.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-body">
+          <h4>Configure the source</h4>
+          <table class="guide-table">
+            <tr><td><strong>Source</strong></td><td>Deploy from a branch</td></tr>
+            <tr><td><strong>Branch</strong></td><td>main</td></tr>
+            <tr><td><strong>Folder</strong></td><td>/ (root)</td></tr>
+          </table>
+          <p style="margin-top:8px;">Click <strong>Save</strong>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div class="step-body">
+          <h4>Wait ~60 seconds, then refresh</h4>
+          <p>GitHub will display a green box with your live URL:</p>
+          <div class="code-block" style="margin-top:8px;">
+            <pre>https://<span class="str">YOUR_USERNAME</span>.github.io/fhir-platform/</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-green">
+    <span class="alert-icon">✅</span>
+    <span>GitHub Pages redeploys automatically every time you push a change. There's no build step — your HTML/JS files are served directly.</span>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="section" id="verify">
+  <div class="section-label">Step 4</div>
+  <h2><span class="step-num">4</span>Verify Deployment</h2>
+
+  <p>Open your Pages URL. You should see:</p>
+  <div class="card">
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-circle">✓</div>
+        <div class="step-body">
+          <h4>Landing page loads at <code>/</code></h4>
+          <p>The landing page (index.html) shows both platform cards and green bridge status indicators.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">✓</div>
+        <div class="step-body">
+          <h4>Both platform links open</h4>
+          <p>Clicking "Open Client Platform" loads <code>/client.html</code> and "Open Vendor Platform" loads <code>/vendor.html</code> — each in a new tab.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">✓</div>
+        <div class="step-body">
+          <h4>Storage stats update</h4>
+          <p>The counters on the landing page (Orders: 0, Results: 0, Files: 0) are live. After sending a test order they'll increment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- TEST THE FLOW -->
+<div class="section" id="test-flow">
+  <div class="section-label">Usage</div>
+  <h2>Test the complete message flow</h2>
+  <p>Do this in the same browser on the same device. Open both platform tabs first.</p>
+
+  <div class="card">
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-body">
+          <h4>Open both tabs</h4>
+          <p>From the landing page, click both platform cards. Each opens in a new tab. Keep both open — don't close them.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-body">
+          <h4>Send an order from Client</h4>
+          <p>In the Client tab: fill in the order form (patient name, test, priority) → click <strong>Send Order</strong>. The form builds a FHIR ServiceRequest and submits it via the bridge.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-body">
+          <h4>Watch the order arrive in Vendor</h4>
+          <p>Switch to the Vendor tab. Within 1–4 seconds the order appears at the top of the Inbox with the patient name, test, and priority — colour-coded by urgency. A toast notification pops up.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div class="step-body">
+          <h4>Accept and build a result</h4>
+          <p>Click <strong>Accept</strong> on the order. Go to <strong>Report Builder</strong>. The patient and order details are pre-filled. Enter lab values (e.g. Troponin 2.84 ng/mL, flag HH), optionally attach a PDF or image, then click <strong>Send Result</strong>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <div class="step-body">
+          <h4>Result arrives in Client Observations</h4>
+          <p>Switch back to the Client tab. Go to <strong>Observations</strong>. The DiagnosticReport card appears with a result table, abnormal flags highlighted in red, and download buttons for every attachment.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">6</div>
+        <div class="step-body">
+          <h4>Check order status updated</h4>
+          <p>In Client, go to <strong>Order List</strong>. The status badge for your order has changed from <em>Sent</em> → <em>Accepted</em> → <em>Complete</em> automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOADS -->
+<div class="section" id="downloads">
+  <div class="section-label">File Downloads</div>
+  <h2>Downloading files on both sides</h2>
+
+  <table class="guide-table">
+    <thead><tr><th>Button</th><th>Platform</th><th>What downloads</th><th>Format</th></tr></thead>
+    <tbody>
+      <tr><td>↓ FHIR JSON (Order List)</td><td>Client</td><td>ServiceRequest resource</td><td><code>.json</code> · application/fhir+json</td></tr>
+      <tr><td>↓ FHIR JSON (Observations)</td><td>Client</td><td>DiagnosticReport Bundle</td><td><code>.json</code> · application/fhir+json</td></tr>
+      <tr><td>↓ [filename] (Observations)</td><td>Client</td><td>Attached file from vendor</td><td>Original file type (PDF, JPEG, etc.)</td></tr>
+      <tr><td>↓ FHIR (Sent Results)</td><td>Vendor</td><td>DiagnosticReport Bundle</td><td><code>.json</code> · application/fhir+json</td></tr>
+      <tr><td>↓ FHIR (Inbox)</td><td>Vendor</td><td>ServiceRequest received</td><td><code>.json</code> · application/fhir+json</td></tr>
+      <tr><td>↓ [ext badge] (Sent Results)</td><td>Vendor</td><td>Attached file by type</td><td>PDF / DICOM / JPEG / HL7</td></tr>
+    </tbody>
+  </table>
+
+  <div class="alert alert-blue">
+    <span class="alert-icon">ℹ️</span>
+    <span>Downloads use <code>Blob + URL.createObjectURL()</code> — they work completely offline and require no server. Files attached by the vendor (stored as base64 in localStorage) are decoded back to their original format on download.</span>
+  </div>
+</div>
+
+<!-- STORAGE -->
+<div class="section" id="storage">
+  <div class="section-label">Storage</div>
+  <h2>Browser storage limits</h2>
+
+  <table class="guide-table">
+    <thead><tr><th>File type</th><th>Typical size</th><th>Base64 size</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>FHIR ServiceRequest</td><td>~2 KB</td><td>~3 KB</td><td>No limit in practice</td></tr>
+      <tr><td>FHIR DiagnosticReport Bundle</td><td>~8 KB</td><td>~11 KB</td><td>No limit in practice</td></tr>
+      <tr><td>PDF lab report</td><td>200 KB – 1 MB</td><td>270 KB – 1.3 MB</td><td>Fine for most reports</td></tr>
+      <tr><td>JPEG / PNG X-Ray</td><td>500 KB – 2 MB</td><td>670 KB – 2.7 MB</td><td>Works well</td></tr>
+      <tr><td>Single DICOM file</td><td>500 KB – 4 MB</td><td>670 KB – 5.3 MB</td><td>Max ~3–4 MB per file</td></tr>
+      <tr><td>CT/MRI series (300+ slices)</td><td>100+ MB</td><td>—</td><td>⚠️ Too large — use ImagingStudy URL reference instead</td></tr>
+    </tbody>
+  </table>
+
+  <p>Total localStorage across all browsers is typically 5–10 MB. The landing page shows live usage. Click <strong>Clear All Data</strong> to reset if you hit the limit during testing.</p>
+</div>
+
+<hr class="divider">
+
+<!-- PRODUCTION -->
+<div class="section" id="production">
+  <div class="section-label">Advanced</div>
+  <h2>Connecting to a real FHIR server</h2>
+  <p>The bridge's localStorage layer handles real-time tab-to-tab messaging. For durable storage on a real FHIR server, use the built-in REST client in each platform:</p>
+
+  <h3>On the Client Platform</h3>
+  <p>Go to <strong>Settings → Server Config</strong>. Enter your FHIR base URL and authentication. Use the <strong>Raw Editor</strong> to POST ServiceRequests directly to the server.</p>
+
+  <h3>On the Vendor Platform</h3>
+  <p>Go to <strong>Settings → Vendor Configuration</strong>. Configure the client endpoint URL. Use the <strong>FHIR Composer</strong> to POST DiagnosticReport bundles directly.</p>
+
+  <h3>Recommended open FHIR servers for testing</h3>
+  <table class="guide-table">
+    <thead><tr><th>Server</th><th>URL</th><th>Auth</th></tr></thead>
+    <tbody>
+      <tr><td>HAPI FHIR (public)</td><td><code>https://hapi.fhir.org/baseR4</code></td><td>None — open access</td></tr>
+      <tr><td>SMART Health IT</td><td><code>https://r4.smarthealthit.org</code></td><td>None — open access</td></tr>
+      <tr><td>Azure Health Data Services</td><td>Your instance URL</td><td>Azure AD Bearer token</td></tr>
+      <tr><td>AWS HealthLake</td><td>Your endpoint URL</td><td>AWS Signature V4</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CROSS DEVICE -->
+<div class="section" id="cross-device">
+  <div class="section-label">Advanced</div>
+  <h2>Cross-device messaging</h2>
+
+  <div class="alert alert-yellow">
+    <span class="alert-icon">⚠️</span>
+    <span><strong>Current limitation:</strong> BroadcastChannel and localStorage work only within a single browser session on a single device. For two different computers or mobile devices to communicate, a shared backend is needed.</span>
+  </div>
+
+  <h3>Option 1 — Use a real FHIR server (recommended)</h3>
+  <p>Both platforms can POST/GET from the same HAPI FHIR instance. Client sends ServiceRequest → Vendor polls for new ServiceRequests → Vendor POSTs DiagnosticReport → Client polls for results.</p>
+
+  <h3>Option 2 — Add a WebSocket relay</h3>
+  <p>Replace the BroadcastChannel calls in <code>fhir-bridge.js</code> with WebSocket events. A free Node.js server on Railway or Render can act as a relay in under 50 lines.</p>
+
+  <h3>Option 3 — FHIR Subscriptions (R4B / R5)</h3>
+  <p>FHIR R4B and R5 define a Subscription resource that pushes notifications via webhook or WebSocket when new resources arrive. This is the production-grade path.</p>
+
+  <div class="code-block">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><span class="cmt">// Example: replace BroadcastChannel in fhir-bridge.js with WebSocket</span>
+<span class="kw">const</span> ws = <span class="kw">new</span> WebSocket(<span class="str">'wss://your-relay.onrender.com'</span>);
+
+<span class="kw">function</span> submitOrder(fhirResource, attachmentMetas) {
+  <span class="cmt">// ... existing localStorage code stays ...</span>
+  ws.send(JSON.stringify({ <span class="kw">event</span>: <span class="str">'NEW_ORDER'</span>, envelope }));
+  <span class="kw">return</span> envelope;
+}
+
+ws.onmessage = (e) => {
+  <span class="kw">const</span> msg = JSON.parse(e.data);
+  <span class="kw">if</span> (msg.event === <span class="str">'NEW_RESULT'</span>) resultCallbacks.forEach(cb => cb(msg.envelope));
+};</pre>
+  </div>
+</div>
+
+<!-- TROUBLESHOOT -->
+<div class="section" id="troubleshoot">
+  <div class="section-label">Troubleshooting</div>
+  <h2>Common issues and fixes</h2>
+
+  <table class="guide-table">
+    <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Vendor Inbox doesn't receive order</td>
+        <td>Different browsers or different devices</td>
+        <td>Open both tabs in the <strong>same browser window</strong> on the same machine</td>
+      </tr>
+      <tr>
+        <td>Order arrives after 4 seconds, not instantly</td>
+        <td>BroadcastChannel not supported (Safari private mode)</td>
+        <td>Normal fallback — storage event poll kicks in. Use Chrome for instant delivery</td>
+      </tr>
+      <tr>
+        <td>"File too large" error on attachment</td>
+        <td>File exceeds localStorage capacity</td>
+        <td>Compress the file, or use a URL reference for DICOM series</td>
+      </tr>
+      <tr>
+        <td>localStorage full warning</td>
+        <td>Too many files stored across sessions</td>
+        <td>Click "Clear All Data" on the landing page, then reload both platform tabs</td>
+      </tr>
+      <tr>
+        <td>GitHub Pages returns 404</td>
+        <td>Branch name or folder wrong, or Pages not saved</td>
+        <td>Check Settings → Pages. Branch must be <code>main</code> (not <code>master</code>), folder <code>/</code></td>
+      </tr>
+      <tr>
+        <td>GitHub Pages shows raw HTML source</td>
+        <td>Missing <code>.nojekyll</code> file</td>
+        <td>Upload the <code>.nojekyll</code> file to the repository root</td>
+      </tr>
+      <tr>
+        <td>fhir-bridge.js not found (404 in console)</td>
+        <td>File not uploaded or wrong folder</td>
+        <td>Confirm <code>fhir-bridge.js</code> is in the repository root, same level as index.html</td>
+      </tr>
+      <tr>
+        <td>CORS error in Raw Editor</td>
+        <td>FHIR server blocks browser requests</td>
+        <td>Use <code>https://hapi.fhir.org/baseR4</code> which has open CORS, or configure your server's CORS headers</td>
+      </tr>
+      <tr>
+        <td>Observations page blank after result sent</td>
+        <td>Both platforms not in the same browser</td>
+        <td>Open both in the same browser. Reload Client — the poll will pick up results within 4 seconds</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</main>
+</div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+// Highlight active nav on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-list a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+}, { passive: true });
+</script>
+</body>
+</html>

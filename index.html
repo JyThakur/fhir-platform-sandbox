@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FHIR Platform Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="fhir-bridge.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.hero{text-align:center;margin-bottom:48px;}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;}
+.logo-badge{width:44px;height:44px;background:linear-gradient(135deg,#1f6feb,#0b6e4f);border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.logo-badge svg{width:24px;height:24px;fill:white;}
+h1{font-size:clamp(22px,4vw,36px);font-weight:600;letter-spacing:-0.5px;margin-bottom:8px;}
+h1 span{color:#58a6ff;}
+.subtitle{font-size:14px;color:#8b949e;max-width:480px;line-height:1.6;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:780px;margin-bottom:32px;}
+.platform-card{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:28px;text-decoration:none;transition:all .2s;display:flex;flex-direction:column;gap:16px;}
+.platform-card:hover{border-color:#58a6ff;transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.platform-card.vendor:hover{border-color:#0e8f66;}
+.card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-icon.client{background:#0c2d5c;}
+.card-icon.vendor{background:#e6f4ef;}
+.card-icon svg{width:26px;height:26px;}
+.card-name{font-size:18px;font-weight:600;margin-bottom:4px;}
+.card-name.client{color:#58a6ff;}
+.card-name.vendor{color:#0e8f66;}
+.card-desc{font-size:13px;color:#8b949e;line-height:1.6;}
+.card-features{display:flex;flex-direction:column;gap:6px;}
+.feat{display:flex;align-items:center;gap:8px;font-size:12px;color:#6e7681;}
+.feat::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.feat.client-feat::before{background:#58a6ff;}
+.feat.vendor-feat::before{background:#0e8f66;}
+.card-cta{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;margin-top:auto;width:fit-content;}
+.cta-client{background:#1f6feb;color:white;}
+.cta-vendor{background:#0b6e4f;color:white;}
+.platform-card:hover .cta-client{background:#388bfd;}
+.platform-card:hover .cta-vendor{background:#0e8f66;}
+.bridge-status{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 24px;width:100%;max-width:780px;margin-bottom:32px;}
+.bridge-title{font-size:12px;color:#6e7681;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.bridge-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.bridge-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#8b949e;}
+.bridge-dot{width:8px;height:8px;border-radius:50%;}
+.green{background:#3fb950;animation:pulse 2s infinite;}
+.blue{background:#58a6ff;}
+.gray{background:#6e7681;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.stats-mini{display:flex;gap:20px;font-size:12px;}
+.stat-mini{text-align:center;}
+.stat-mini .val{font-size:20px;font-weight:600;display:block;}
+.stat-mini .lbl{color:#6e7681;font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+.instructions{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px 24px;width:100%;max-width:780px;margin-bottom:20px;}
+.instructions h3{font-size:13px;font-weight:600;margin-bottom:12px;color:#e6edf3;}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.step{display:flex;gap:10px;align-items:flex-start;}
+.step-num{width:22px;height:22px;border-radius:50%;background:#21262d;border:1px solid #30363d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#58a6ff;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:12px;color:#8b949e;line-height:1.5;}
+.step-text strong{color:#e6edf3;display:block;margin-bottom:1px;}
+.clear-btn{background:none;border:1px solid #30363d;color:#6e7681;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.clear-btn:hover{border-color:#f85149;color:#f85149;}
+.footer{font-size:11px;color:#6e7681;text-align:center;margin-top:8px;}
+.footer a{color:#58a6ff;text-decoration:none;}
+@media(max-width:600px){
+  .cards{grid-template-columns:1fr;}
+  .steps{grid-template-columns:1fr;}
+  .bridge-row{flex-direction:column;align-items:flex-start;}
+  .stats-mini{gap:12px;}
+}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="logo-row">
+    <div class="logo-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+    <h1>FHIR <span>Platform Suite</span></h1>
+  </div>
+  <p class="subtitle">Two-platform healthcare messaging system. Client orders flow to the Vendor in real time. Results and files return seamlessly — all FHIR R4 compliant.</p>
+</div>
+
+<!-- Bridge Status -->
+<div class="bridge-status">
+  <div class="bridge-title">Message Bridge Status</div>
+  <div class="bridge-row">
+    <div class="bridge-item"><div class="bridge-dot green"></div>BroadcastChannel Active</div>
+    <div class="bridge-item"><div class="bridge-dot green"></div>localStorage Connected</div>
+    <div class="bridge-item"><div class="bridge-dot blue"></div>FHIR R4 · JSON + XML</div>
+    <div class="bridge-item"><div class="bridge-dot blue"></div>File Store Ready</div>
+    <div class="stats-mini">
+      <div class="stat-mini"><span class="val" id="stat-orders" style="color:#58a6ff;">0</span><span class="lbl">Orders</span></div>
+      <div class="stat-mini"><span class="val" id="stat-results" style="color:#3fb950;">0</span><span class="lbl">Results</span></div>
+      <div class="stat-mini"><span class="val" id="stat-files" style="color:#e3b341;">0</span><span class="lbl">Files</span></div>
+      <div class="stat-mini"><span class="val" id="stat-storage" style="color:#8b949e;">0</span><span class="lbl">Storage</span></div>
+    </div>
+    <button class="clear-btn" onclick="clearData()">Clear All Data</button>
+  </div>
+</div>
+
+<!-- Platform Cards -->
+<div class="cards">
+  <a class="platform-card" href="fhir-client-platform.html" target="_blank">
+    <div>
+      <div class="card-icon client">
+        <svg viewBox="0 0 24 24" fill="#58a6ff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      </div>
+      <div class="card-name client">Client Platform</div>
+      <div class="card-desc">Order creator — for clinicians sending ServiceRequests to labs, radiology, and pathology vendors.</div>
+    </div>
+    <div class="card-features">
+      <div class="feat client-feat">Create orders via Form, JSON, or XML</div>
+      <div class="feat client-feat">LOINC code browser + FHIR validator</div>
+      <div class="feat client-feat">Live order status tracking</div>
+      <div class="feat client-feat">Receive & download observation results</div>
+    </div>
+    <div class="cta-client card-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+      Open Client Platform →
+    </div>
+  </a>
+
+  <a class="platform-card vendor" href="fhir-vendor-platform.html" target="_blank">
+    <div>
+      <div class="card-icon vendor">
+        <svg viewBox="0 0 24 24" fill="#0b6e4f"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      </div>
+      <div class="card-name vendor">Vendor Platform</div>
+      <div class="card-desc">Result sender — for labs and imaging centres receiving orders and returning DiagnosticReports with attachments.</div>
+    </div>
+    <div class="card-features">
+      <div class="feat vendor-feat">Receive orders in real time</div>
+      <div class="feat vendor-feat">Build reports: Lab, Radiology, Pathology</div>
+      <div class="feat vendor-feat">Attach DICOM, PDF, X-Ray, HL7 files</div>
+      <div class="feat vendor-feat">Send FHIR Bundle back to client</div>
+    </div>
+    <div class="cta-vendor card-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      Open Vendor Platform →
+    </div>
+  </a>
+</div>
+
+<!-- How to use -->
+<div class="instructions">
+  <h3>How to test the full message flow</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Open both platforms</strong>Click each card above — they open in separate browser tabs on the same device.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Send an order (Client)</strong>Fill the form → click "Send Order". The order transmits via BroadcastChannel + localStorage.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Receive the order (Vendor)</strong>Switch to the Vendor tab — the order appears in Inbox within seconds. Click "Accept".</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Build & send result (Vendor)</strong>Go to Report Builder, enter results, attach files (PDF/images), click "Send Result".</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Receive result (Client)</strong>Switch back to Client — the DiagnosticReport appears in Observations automatically.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-text"><strong>Download files</strong>Click ↓ buttons on either side to download FHIR JSON, PDFs, or images as real files.</div></div>
+  </div>
+</div>
+
+<!-- Deployment Guide + Resources row -->
+<div style="display:flex;gap:12px;width:100%;max-width:780px;margin-bottom:20px;flex-wrap:wrap;">
+  <a href="DEPLOYMENT_GUIDE.html" target="_blank"
+     style="flex:1;min-width:220px;background:#161b22;border:1px solid #30363d;border-radius:12px;
+            padding:16px 20px;text-decoration:none;display:flex;align-items:center;gap:12px;
+            transition:all .2s;"
+     onmouseover="this.style.borderColor='#58a6ff'" onmouseout="this.style.borderColor='#30363d'">
+    <div style="width:38px;height:38px;background:#0c2d5c;border-radius:10px;display:flex;
+                align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#58a6ff">
+        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15h8v2H8zm0-4h8v2H8zm0-4h5v2H8z"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#58a6ff;margin-bottom:2px;">📋 Deployment Guide</div>
+      <div style="font-size:11px;color:#6e7681;">Step-by-step GitHub Pages setup</div>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:#6e7681;">Open →</div>
+  </a>
+
+  <a href="README.md" target="_blank"
+     style="flex:1;min-width:220px;background:#161b22;border:1px solid #30363d;border-radius:12px;
+            padding:16px 20px;text-decoration:none;display:flex;align-items:center;gap:12px;
+            transition:all .2s;"
+     onmouseover="this.style.borderColor='#3fb950'" onmouseout="this.style.borderColor='#30363d'">
+    <div style="width:38px;height:38px;background:#0b2a1a;border-radius:10px;display:flex;
+                align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#3fb950">
+        <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#3fb950;margin-bottom:2px;">📖 Documentation</div>
+      <div style="font-size:11px;color:#6e7681;">Full README · resources · scenarios</div>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:#6e7681;">Open →</div>
+  </a>
+</div>
+
+<p class="footer">Runs entirely in the browser · No server required · Data stored in localStorage ·
+  <a href="#" onclick="showStorage()">View storage usage</a> ·
+  <a href="DEPLOYMENT_GUIDE.html" target="_blank">Deployment Guide</a>
+</p>
+
+<script>
+function updateStats() {
+  try {
+    const orders = FHIRBridge.getOrders();
+    const results = FHIRBridge.getResults();
+    const files = FHIRBridge.getFileMeta();
+    const usage = FHIRBridge.getStorageUsage();
+    document.getElementById('stat-orders').textContent = orders.length;
+    document.getElementById('stat-results').textContent = results.length;
+    document.getElementById('stat-files').textContent = files.length;
+    document.getElementById('stat-storage').textContent = usage.kb + ' KB';
+  } catch(e) {}
+}
+function clearData() {
+  if (confirm('Clear all orders, results and files from localStorage?')) {
+    FHIRBridge.clearAll();
+    updateStats();
+    alert('All data cleared. Refresh both platform tabs.');
+  }
+}
+function showStorage() {
+  const u = FHIRBridge.getStorageUsage();
+  alert('Storage used: ' + u.mb + ' MB (' + u.percentOfTypical5MB + '% of typical 5MB limit)');
+}
+updateStats();
+setInterval(updateStats, 3000);
+</script>
+</body>
+</html>
